@@ -1,2 +1,2 @@
 release: flask db upgrade
-web: gunicorn app:app
+web: gunicorn story_engine_api:story-engine-api
