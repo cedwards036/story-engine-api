@@ -1,4 +1,4 @@
-from app import db
+from story_engine_api import db
 
 
 class Deck(db.Model):
