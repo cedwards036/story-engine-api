@@ -17,10 +17,11 @@ def create_app():
     migrate = Migrate(app, db)
 
     from story_engine_api.models import Deck, Pack, Category, Card
+    from story_engine_api.serializers import DeckSchema
 
     @app.route('/decks')
     def get_decks():
-        return jsonify(Deck.query.all())
+        return DeckSchema(many=True).dumps(Deck.query.all())
     
     return app
 
