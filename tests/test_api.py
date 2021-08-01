@@ -42,6 +42,10 @@ def test_get_random_hand(client):
     for row in result:
         assert row['pack'] in ['Base', 'Fantasy']
 
+def test_get_random_card_from_category(client):
+    result = json.loads(client.get('/decks/1/random/card?category=3&pack=3').data)
+    assert {'cue': 'But the dragon will be mad', 'category': 'Conflict', 'category_id': 3, 'pack': 'Fantasy'}
+
 def load_test_data(db):
     db.session.add(Deck('The Story Engine'))
     db.session.add(Deck('Deck of Worlds'))

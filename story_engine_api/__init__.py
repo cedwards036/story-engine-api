@@ -34,6 +34,12 @@ def create_app():
         packs = request.args.getlist('pack')
         return jsonify([get_random_card(category.id, packs) for category in categories])
 
+    @app.route('/decks/<deck_id>/random/card', methods=['GET'])
+    def get_random_card_from_category(deck_id):
+        category_id = request.args.get('category')
+        pack_ids = request.args.getlist('pack')
+        return jsonify(get_random_card(category_id, pack_ids))
+
     def get_deck_categories(deck_id):
         return Category.query.filter(Category.deck_id==deck_id).order_by(Category.name).all()
 
