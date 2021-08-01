@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -13,15 +13,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import Deck
+from models import Deck, Pack, Category, Card
 
-@app.route('/')
-def hello():
-    return 'My key: ' + os.environ["SECRET_KEY"]
-
-@app.route('/<deck>')
-def hello_name(deck):
-    return f'This deck is {deck}'
+@app.route('/decks')
+def get_decks():
+    return jsonify(Deck.query.all())
 
 if __name__ == '__main__':
     app.run()
