@@ -42,8 +42,8 @@ class Category(db.Model):
     cards = db.relationship('Card', backref=db.backref('category', lazy=True))
     db.UniqueConstraint(deck_id, name)
 
-    def __init__(self, category_id, name):
-        self.category_id = category_id
+    def __init__(self, deck_id, name):
+        self.deck_id = deck_id
         self.name = name
 
     def __repr__(self):

@@ -7,3 +7,4 @@ class DeckSchema(Schema):
 class PackSchema(Schema):
     name = fields.Str()
     id = fields.Int()
+    
