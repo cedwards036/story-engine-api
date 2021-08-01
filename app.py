@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return os.environ["SECRET_KEY"]
+    return 'My key: ' + os.environ["SECRET_KEY"]
 
 
 if __name__ == '__main__':
