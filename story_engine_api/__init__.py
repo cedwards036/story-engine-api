@@ -1,5 +1,7 @@
 import os
 import random
+import io
+import csv
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
@@ -39,6 +41,42 @@ def create_app():
         category_id = request.args.get('category')
         pack_ids = request.args.getlist('pack')
         return jsonify(get_random_card(category_id, pack_ids))
+    
+    @app.route('/upload/insert', methods=['POST'])
+    def upload_csv_for_insertion():
+        if 'file' not in request.files or request.files['file'].filename == '':
+            return jsonify({'message': 'No file selected'})
+        else:
+            file = request.files['file']
+            stream = io.StringIO(file.stream.read().decode('UTF8'), newline=None)
+            csv_input = [row for row in csv.DictReader(stream)]
+            for row in csv_input:
+                deck = Deck.query.filter_by(name=row['deck']).first()
+                pack = Pack.query.join(Deck).filter(Deck.name==row['deck'], Pack.name==row['pack']).first()
+                category = Category.query.join(Deck).filter(Deck.name==row['deck'], Category.name==row['category']).first()
+                card = Card.query.join(Pack).join(Category).filter(Pack.name==row['pack'], Category.name==row['category'], Card.cue==row['cue']).first()
+                if deck is None:
+                    deck = Deck(row['deck'])
+                    db.session.add(deck)
+                    db.session.commit()
+                    db.session.refresh(deck)
+                if pack is None:
+                    pack = Pack(deck.id, row['pack'])
+                    db.session.add(pack)
+                    db.session.commit()
+                    db.session.refresh(pack)
+                if category is None:
+                    category = Category(deck.id, row['category'])
+                    db.session.add(category)
+                    db.session.commit()
+                    db.session.refresh(category)
+                if card is None:
+                    card = Card(pack.id, category.id, row['cue'])
+                    db.session.add(card)
+                    db.session.commit()
+            return jsonify({'message': f'{len(csv_input)} rows processed successfully!'})
+
+
 
     def get_deck_categories(deck_id):
         return Category.query.filter(Category.deck_id==deck_id).order_by(Category.name).all()

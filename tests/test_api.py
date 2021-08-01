@@ -44,7 +44,25 @@ def test_get_random_hand(client):
 
 def test_get_random_card_from_category(client):
     result = json.loads(client.get('/decks/1/random/card?category=3&pack=3').data)
-    assert {'cue': 'But the dragon will be mad', 'category': 'Conflict', 'category_id': 3, 'pack': 'Fantasy'}
+    assert {'cue': 'But the dragon will be mad', 'category': 'Conflict', 'category_id': 3, 'pack': 'Fantasy'} == result
+
+def test_upload_csv_for_insertion(client):
+    with open('tests/test_upload.csv', 'rb') as file:
+        result = json.loads(client.post('/upload/insert', data={'file': file}, content_type='multipart/form-data').data)
+        assert result == {'message': '6 rows processed successfully!'}
+
+        # assert that new data was inserted successfully
+        assert db.session.query(Deck).filter(Deck.name=='The Story Engine II').first() is not None
+        assert db.session.query(Pack).join(Deck).filter(Deck.name=='The Story Engine II', Pack.name=='Theatre').first() is not None
+        assert db.session.query(Category).join(Deck).filter(Deck.name=='The Story Engine II', Category.name=='Detail').first() is not None
+        assert db.session.query(Card).join(Pack).join(Category).filter(Pack.name=='Theatre', Category.name=='Detail', Card.cue=='The sky was green today').first() is not None
+        assert db.session.query(Card).join(Pack).join(Category).filter(Pack.name=='Fantasy', Category.name=='Anchor', Card.cue=='The one ring').first() is not None
+
+        # assert that no duplicate data was inserted (duplicates shown in expected values are due to multiple decks sharing values)
+        assert ['The Story Engine', 'Deck of Worlds', 'The Story Engine II'] == [deck.name for deck in db.session.query(Deck).all()]
+        assert ['Base', 'Cyberpunk', 'Fantasy', 'Base', 'Desert', 'Theatre'] == [pack.name for pack in db.session.query(Pack).all()]
+        assert ['Agent', 'Anchor', 'Conflict', 'Conflict', 'Detail'] == [category.name for category in db.session.query(Category).all()]
+        assert ['A wizard'] == [card.cue for card in db.session.query(Card).filter_by(cue='A wizard').all()]
 
 def load_test_data(db):
     db.session.add(Deck('The Story Engine'))
