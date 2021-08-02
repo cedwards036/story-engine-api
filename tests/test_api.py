@@ -46,6 +46,21 @@ def test_get_random_card_from_category(client):
     result = json.loads(client.get('/decks/1/random/card?category=3&pack=3').data)
     assert {'cue': 'But the dragon will be mad', 'category': 'Conflict', 'category_id': 3, 'pack': 'Fantasy'} == result
 
+def test_create_pack(client):
+    result = json.loads(client.post('/decks/1/packs', data=json.dumps({'name': 'Anime'}), content_type='application/json').data)
+    assert db.session.query(Pack).filter(Pack.name=='Anime', Pack.deck_id==1).first() is not None
+    assert {'id': 6, 'name': 'Anime'} == result
+
+def test_create_deck(client):
+    result = json.loads(client.post('/decks', data=json.dumps({'name': 'A New Deck'}), content_type='application/json').data)
+    assert db.session.query(Deck).filter(Deck.name=='A New Deck').first() is not None
+    assert {'id': 3, 'name': 'A New Deck'} == result
+
+def test_create_category(client):
+    result = json.loads(client.post('/decks/1/categories', data=json.dumps({'name': 'Plot Twist', 'order': 4}), content_type='application/json').data)
+    assert db.session.query(Category).filter(Category.name=='Plot Twist', Category.deck_id==1, Category.order==4).first() is not None
+    assert {'id': 4, 'name': 'Plot Twist', 'order': 4} == result
+
 def test_upload_csv_for_insertion(client):
     with open('tests/test_upload.csv', 'rb') as file:
         result = json.loads(client.post('/upload/insert', data={'file': file}, content_type='multipart/form-data').data)
@@ -74,9 +89,9 @@ def load_test_data(db):
     db.session.add(Pack(2, 'Base'))
     db.session.add(Pack(2, 'Desert'))
 
-    db.session.add(Category(1, 'Agent'))
-    db.session.add(Category(1, 'Anchor'))
-    db.session.add(Category(1, 'Conflict'))
+    db.session.add(Category(1, 'Agent', 1))
+    db.session.add(Category(1, 'Anchor', 2))
+    db.session.add(Category(1, 'Conflict', 3))
 
     db.session.add(Card(1, 1, 'A wizard'))
     db.session.add(Card(1, 1, 'A rogue'))

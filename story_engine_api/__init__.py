@@ -20,15 +20,53 @@ def create_app():
     migrate = Migrate(app, db)
 
     from story_engine_api.models import Deck, Pack, Category, Card
-    from story_engine_api.serializers import DeckSchema, PackSchema
+    from story_engine_api.serializers import DeckSchema, PackSchema, CategorySchema
 
     @app.route('/decks', methods=['GET'])
     def get_decks():
         return DeckSchema(many=True).dumps(Deck.query.all())
+
+    @app.route('/decks', methods=['POST'])
+    def create_deck():
+        deck_name = request.json['name']
+        if Deck.query.filter_by(name=deck_name).first() is None:
+            new_deck = Deck(deck_name)
+            db.session.add(new_deck)
+            db.session.commit()
+            db.session.refresh(new_deck)
+            return DeckSchema().dumps(new_deck)
+        else:
+            return jsonify({'Error': f'Deck "{deck_name}" already exists'}), 422
     
     @app.route('/decks/<deck_id>/packs', methods=['GET'])
     def get_deck_packs(deck_id):
         return PackSchema(many=True).dumps(Pack.query.filter(Pack.deck_id==deck_id).order_by(Pack.name).all())
+    
+    @app.route('/decks/<deck_id>/packs', methods=['POST'])
+    def create_pack(deck_id):
+        pack_name = request.json['name']
+        if Pack.query.filter_by(name=pack_name, deck_id=deck_id).first() is None:
+            new_pack = Pack(deck_id, pack_name)
+            db.session.add(new_pack)
+            db.session.commit()
+            db.session.refresh(new_pack)
+            return PackSchema().dumps(new_pack)
+        else:
+            return jsonify({'Error': f'Pack "{pack_name}" already exists'}), 422
+
+    
+    @app.route('/decks/<deck_id>/categories', methods=['POST'])
+    def create_category(deck_id):
+        category_name = request.json['name']
+        category_order = request.json['order']
+        if Category.query.filter_by(name=category_name, deck_id=deck_id).first() is None:
+            new_category = Category(deck_id, category_name, category_order)
+            db.session.add(new_category)
+            db.session.commit()
+            db.session.refresh(new_category)
+            return CategorySchema().dumps(new_category)
+        else:
+            return jsonify({'Error': f'Category "{category_name}" already exists'}), 422
 
     @app.route('/decks/<deck_id>/random/hand', methods=['GET'])
     def get_random_hand(deck_id):
@@ -66,7 +104,7 @@ def create_app():
                     db.session.commit()
                     db.session.refresh(pack)
                 if category is None:
-                    category = Category(deck.id, row['category'])
+                    category = Category(deck.id, row['category'], 0)
                     db.session.add(category)
                     db.session.commit()
                     db.session.refresh(category)

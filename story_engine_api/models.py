@@ -39,15 +39,17 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     deck_id = db.Column(db.Integer, db.ForeignKey('deck.id'), nullable=False)
     name = db.Column(db.String(), nullable=False)
+    order = db.Column(db.Integer, nullable=False)
     cards = db.relationship('Card', backref=db.backref('category', lazy=True))
     db.UniqueConstraint(deck_id, name)
 
-    def __init__(self, deck_id, name):
+    def __init__(self, deck_id, name, order):
         self.deck_id = deck_id
         self.name = name
+        self.order = order
 
     def __repr__(self):
-        return f'<Category id: {self.id}, deck_id: {self.deck_id}, name: {self.name}>'
+        return f'<Category id: {self.id}, deck_id: {self.deck_id}, name: {self.name}, order: {self.order}>'
 
 
 class Card(db.Model):
