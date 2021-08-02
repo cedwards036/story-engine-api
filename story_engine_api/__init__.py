@@ -83,7 +83,7 @@ def create_app():
     @app.route('/upload/insert', methods=['POST'])
     def upload_csv_for_insertion():
         if 'file' not in request.files or request.files['file'].filename == '':
-            return jsonify({'message': 'No file selected'})
+            return jsonify({'message': 'No file selected'}), 400
         else:
             file = request.files['file']
             stream = io.StringIO(file.stream.read().decode('UTF8'), newline=None)
@@ -92,26 +92,13 @@ def create_app():
                 deck = Deck.query.filter_by(name=row['deck']).first()
                 pack = Pack.query.join(Deck).filter(Deck.name==row['deck'], Pack.name==row['pack']).first()
                 category = Category.query.join(Deck).filter(Deck.name==row['deck'], Category.name==row['category']).first()
-                card = Card.query.join(Pack).join(Category).filter(Pack.name==row['pack'], Category.name==row['category'], Card.cue==row['cue']).first()
-                if deck is None:
-                    deck = Deck(row['deck'])
-                    db.session.add(deck)
-                    db.session.commit()
-                    db.session.refresh(deck)
-                if pack is None:
-                    pack = Pack(deck.id, row['pack'])
-                    db.session.add(pack)
-                    db.session.commit()
-                    db.session.refresh(pack)
-                if category is None:
-                    category = Category(deck.id, row['category'], 0)
-                    db.session.add(category)
-                    db.session.commit()
-                    db.session.refresh(category)
-                if card is None:
+                card = Card.query.join(Pack).join(Deck).join(Category).filter(Deck.name==row['deck'], Pack.name==row['pack'], Category.name==row['category'], Card.cue==row['cue']).first()
+                if deck is None or pack is None or category is None:
+                    return jsonify({'message': 'Invalid data'}), 400
+                elif card is None:
                     card = Card(pack.id, category.id, row['cue'])
                     db.session.add(card)
-                    db.session.commit()
+            db.session.commit()
             return jsonify({'message': f'{len(csv_input)} rows processed successfully!'})
 
 
