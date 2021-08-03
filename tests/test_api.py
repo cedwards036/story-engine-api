@@ -38,7 +38,7 @@ def test_get_deck_packs(client):
 def test_get_random_hand(client):
     result = json.loads(client.get('/decks/1/random/hand?pack=1&pack=3').data)
     assert 3 == len(result)
-    assert ['Agent', 'Anchor', 'Conflict'] == sorted([row['category'] for row in result])
+    assert ['Agent', 'Anchor', 'Conflict'] == [row['category'] for row in result]
     for row in result:
         assert row['pack'] in ['Base', 'Fantasy']
 

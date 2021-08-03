@@ -104,7 +104,7 @@ def create_app():
 
 
     def get_deck_categories(deck_id):
-        return Category.query.filter(Category.deck_id==deck_id).order_by(Category.name).all()
+        return Category.query.filter(Category.deck_id==deck_id).order_by(Category.order).all()
 
     def get_random_card(category_id, pack_ids):
         query_results = Card.query.join(Card.category).join(Card.pack).filter(Card.category_id==category_id, Card.pack_id.in_(pack_ids)).all()
