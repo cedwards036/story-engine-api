@@ -44,7 +44,7 @@ def test_get_random_hand(client):
 
 def test_get_random_card_from_category(client):
     result = json.loads(client.get('/decks/1/random/card?category=3&pack=3').data)
-    assert {'cue': 'But the dragon will be mad', 'category': 'Conflict', 'category_id': 3, 'pack': 'Fantasy'} == result
+    assert {'cue': 'But the dragon will be mad', 'category': 'Conflict', 'category_id': 3, 'pack': 'Fantasy', 'id': 6} == result
 
 def test_create_pack(client):
     result = json.loads(client.post('/decks/1/packs', data=json.dumps({'name': 'Anime'}), content_type='application/json').data)

@@ -115,7 +115,8 @@ def create_app():
             'cue': chosen_card.cue,
             'category': chosen_card.category.name,
             'category_id': chosen_card.category.id,
-            'pack': chosen_card.pack.name
+            'pack': chosen_card.pack.name,
+            'id': chosen_card.id
         }
 
     return app
